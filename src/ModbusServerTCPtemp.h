@@ -163,7 +163,8 @@ template <typename ST, typename CT>
     LOG_D("Server task %s started (%d).\n", taskName, (uint32_t)serverTask);
 
     // Wait two seconds for it to establish
-    delay(2000);
+    // delay(2000);
+    // delay(2);
 
     return true;
   }
@@ -240,7 +241,7 @@ void ModbusServerTCP<ST, CT>::serve(ModbusServerTCP<ST, CT> *myself) {
         }
       }
       // Give scheduler room to breathe
-      delay(10);
+      // delay(10);
     }
     LOG_E("Server going down\n");
     // We must go down
