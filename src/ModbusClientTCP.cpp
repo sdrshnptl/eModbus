@@ -53,10 +53,11 @@ void ModbusClientTCP::end() {
   if (worker) {
 #if IS_LINUX
     pthread_cancel(worker);
+    worker = NULL;
 #else
     vTaskDelete(worker);
-#endif
     worker = nullptr;
+#endif
   }
 }
 
@@ -83,7 +84,7 @@ void ModbusClientTCP::begin(int coreID) {
     char taskName[18];
     snprintf(taskName, 18, "Modbus%02XTCP", instanceCounter);
     // Start task to handle the queue
-    xTaskCreatePinnedToCore((TaskFunction_t)&handleConnection, taskName, 4096, this, 5, &worker, coreID >= 0 ? coreID : NULL);
+    xTaskCreatePinnedToCore((TaskFunction_t)&handleConnection, taskName, CLIENT_TASK_STACK, this, 5, &worker, coreID >= 0 ? coreID : NULL);
     LOG_D("TCP client worker %s started\n", taskName);
 #endif
   } else {
@@ -112,6 +113,13 @@ bool ModbusClientTCP::setTarget(IPAddress host, uint16_t port, uint32_t timeout,
 // Return number of unprocessed requests in queue
 uint32_t ModbusClientTCP::pendingRequests() {
   return requests.size();
+}
+
+// Remove all pending request from queue
+void ModbusClientTCP::clearQueue() {
+  std::queue<RequestEntry *> empty;
+  LOCK_GUARD(lockGuard, qLock);
+  std::swap(requests, empty);
 }
 
 // Base addRequest for preformatted ModbusMessage and last set target

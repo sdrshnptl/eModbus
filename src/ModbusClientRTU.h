@@ -31,9 +31,9 @@ public:
   ~ModbusClientRTU();
 
   // begin: start worker task
-  void begin(Stream& serial, uint32_t baudrate, int coreID = -1);
+  void begin(Stream& serial, uint32_t baudrate, int coreID = -1, uint32_t userInterval = 0);
   // Special variant for HardwareSerial
-  void begin(HardwareSerial& serial, int coreID = -1);
+  void begin(HardwareSerial& serial, int coreID = -1, uint32_t userInterval = 0);
 
   // end: stop the worker
   void end();
@@ -56,6 +56,9 @@ public:
   // Return number of unprocessed requests in queue
   uint32_t pendingRequests();
 
+  // Remove all pending request from queue
+  void clearQueue();
+  
   // addBroadcastMessage: create a fire-and-forget message to all servers on the RTU bus
   Error addBroadcastMessage(const uint8_t *data, uint8_t len);
 
@@ -84,7 +87,7 @@ protected:
   ModbusMessage receive(const ModbusMessage request);
 
   // start background task
-  void doBegin(uint32_t baudRate, int coreID);
+  void doBegin(uint32_t baudRate, int coreID, uint32_t userInterval);
 
   void isInstance() { return; }   // make class instantiable
   queue<RequestEntry> requests;   // Queue to hold requests to be processed
